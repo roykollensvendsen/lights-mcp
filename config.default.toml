@@ -1,0 +1,9 @@
+# lights-mcp's settings. `claude-voice plugins install` copies this file to
+# ~/.config/lights-mcp/config.toml the first time, and never over one that exists.
+# Made-up values only: nothing here names a real device, place or person.
+
+[device]
+# The lights's address on your network. The made-up default reaches nothing.
+address = "lights.example.invalid"
+# Answer from the made-up lights in fake.py instead of a real one.
+simulate = true
