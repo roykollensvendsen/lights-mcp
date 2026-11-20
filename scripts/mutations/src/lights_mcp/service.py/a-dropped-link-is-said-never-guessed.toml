@@ -1,0 +1,5 @@
+[[rule]]
+name = "a dropped link is said never guessed"
+file = "src/lights_mcp/service.py"
+find = 'except UnreachableError:'
+replace = 'except ZeroDivisionError:'

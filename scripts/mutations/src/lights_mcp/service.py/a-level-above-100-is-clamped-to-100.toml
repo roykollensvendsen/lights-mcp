@@ -1,0 +1,5 @@
+[[rule]]
+name = "a level above 100 is clamped to 100"
+file = "src/lights_mcp/service.py"
+find = 'wanted = min\(level, MOST\)'
+replace = 'wanted = level'

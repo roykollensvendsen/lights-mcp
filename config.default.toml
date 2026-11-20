@@ -3,7 +3,7 @@
 # Made-up values only: nothing here names a real device, place or person.
 
 [device]
-# The lights's address on your network. The made-up default reaches nothing.
+# The lighting mesh's address. The adapter that reads it comes later. The made-up default reaches nothing.
 address = "lights.example.invalid"
 # Answer from the made-up lights in fake.py instead of a real one.
 simulate = true

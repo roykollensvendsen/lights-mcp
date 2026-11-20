@@ -105,24 +105,24 @@ def test_a_heavy_start_is_caught_by_the_cpu_it_uses(tmp_path):
 
 
 class _Recording:
-    """A lights that keeps every read and answers none."""
+    """A mesh that counts every read and answers none."""
 
     def __init__(self):
         self.asked = 0
 
-    async def read(self):
+    async def lights(self):
         self.asked += 1
         raise OSError
 
 
-def test_listing_the_tools_asks_the_lights_nothing():
+def test_listing_the_tools_asks_the_mesh_nothing():
     """A start that waited on the device would cost no CPU, so it is refused here instead."""
     lights = _Recording()
     assert sorted(t.name for t in asyncio.run(build_server(LightsService(lights)).list_tools())) == sorted(TOOLS)
     assert lights.asked == 0
 
 
-def test_a_read_is_seen_by_the_recording_lights():
+def test_a_read_is_seen_by_the_recording_mesh():
     """Proof the check above can fail: asking a tool does reach the lights."""
     lights = _Recording()
     asyncio.run(build_server(LightsService(lights)).call_tool("lights_status", {}))

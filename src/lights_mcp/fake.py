@@ -1,53 +1,70 @@
-"""A made-up lights that refuses what the real one refuses.
+"""A made-up mesh of two lights that refuses what the real one refuses.
 
-A fake that says yes to everything lets a test pass that the real device would fail. So this
-one keeps the device's limits: it answers at most `READS_PER_MINUTE` times a minute and then
-says how long to wait, and it can be told to stop answering, as a lights off the network does.
-Write each new limit of the real device in here first, with a test, before the code that
-copes with it.
+A fake that says yes to everything lets a test pass that the real mesh would fail. So this one
+keeps the mesh's limits: a level outside 1 to 100 is refused, a light that only switches cannot
+be dimmed, the link can be dropped, and a light can be left out of reach, taking no command.
+Write each new limit of the real mesh in here first, with a test, before the code that copes
+with it.
 """
 
 from __future__ import annotations
 
-import time
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
 
-from lights_mcp.device import Reading, SlowDownError, UnreachableError
+from lights_mcp.device import Light, UnreachableError
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-#: The made-up device's own limit on reads.
-READS_PER_MINUTE = 6
-WINDOW = 60.0
+LOWEST, HIGHEST = 1, 100
 
 
-class FakeLights:
-    """A lights in memory, with the real one's limits."""
+@dataclass
+class _State:
+    level: int  # 0 when off
+    last: int  # the level it comes back on at
+    dimmable: bool
 
-    def __init__(
-        self,
-        *,
-        on: bool = True,
-        level: int = 40,
-        clock: Callable[[], float] = time.monotonic,
-    ) -> None:
-        """Start the fake in a known state; `clock` lets a test move time on."""
-        self.on = on
-        self.level = level
-        self.unreachable = False
-        self._clock = clock
-        self._reads: list[float] = []
 
-    async def read(self) -> Reading:
-        """The state, unless the lights is off the network or was asked too often."""
-        if self.unreachable:
-            msg = "the lights did not answer"
+class FakeMesh:
+    """Two made-up lights in memory, with the real mesh's limits."""
+
+    def __init__(self) -> None:
+        """A dimmable lamp at 40 percent, and a light that only switches, off."""
+        self._lights = {
+            "Desk lamp": _State(level=40, last=40, dimmable=True),
+            "Porch light": _State(level=0, last=HIGHEST, dimmable=False),
+        }
+        self.linked = True
+        #: Lights out of reach: they take no command, and still read as before.
+        self.stuck: set[str] = set()
+
+    async def lights(self) -> list[Light]:
+        """Every light, unless the link is down."""
+        self._linked()
+        return [Light(name, state.level > 0, state.level, state.dimmable) for name, state in self._lights.items()]
+
+    async def switch(self, name: str, *, on: bool) -> None:
+        """Switch a light on at its last level, or off."""
+        state = self._light(name)
+        if name not in self.stuck:
+            state.level = state.last if on else 0
+
+    async def dim(self, name: str, level: int) -> None:
+        """Set a level from 1 to 100, which switches the light on."""
+        state = self._light(name)
+        # RULE: the fake refuses a level the device cannot take
+        if not LOWEST <= level <= HIGHEST:
+            msg = f"level {level} is outside {LOWEST} to {HIGHEST}"
+            raise ValueError(msg)
+        if not state.dimmable:
+            msg = f"{name} only switches"
+            raise ValueError(msg)
+        if name not in self.stuck:
+            state.level = state.last = level
+
+    def _linked(self) -> None:
+        if not self.linked:
+            msg = "the link to the mesh is down"
             raise UnreachableError(msg)
-        now = self._clock()
-        self._reads = [at for at in self._reads if now - at < WINDOW]
-        # RULE: the fake refuses a read sooner than the device allows
-        if len(self._reads) >= READS_PER_MINUTE:
-            raise SlowDownError(WINDOW - (now - self._reads[0]))
-        self._reads.append(now)
-        return Reading(on=self.on, level=self.level)
+
+    def _light(self, name: str) -> _State:
+        self._linked()
+        return self._lights[name]
