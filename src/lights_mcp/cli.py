@@ -1,4 +1,4 @@
-"""Command line for lights-mcp: serve the tools, or say the lights's status once."""
+"""Command line for lights-mcp: serve the tools, or say the lights' status once."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import sys
 
 from lights_mcp import settings
 from lights_mcp.device import Unconnected
-from lights_mcp.fake import FakeLights
+from lights_mcp.fake import FakeMesh
 from lights_mcp.service import LightsService
 
 #: Every verb this command has.
@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="lights-mcp", description=__doc__, formatter_class=HELP)
     verbs = parser.add_subparsers(dest="command", required=True)
     serve = verbs.add_parser("serve", formatter_class=HELP, help="serve the tools over stdio, for a voice session")
-    status = verbs.add_parser("status", formatter_class=HELP, help="say the lights's status, as the voice hears it")
+    status = verbs.add_parser("status", formatter_class=HELP, help="say the lights' status, as the voice hears it")
     for verb in (serve, status):
         verb.add_argument("--simulate", action="store_true", help="answer from the made-up lights")
     args = parser.parse_args(argv)
@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.write(f"{broken}\n")
         return 2
     simulate = args.simulate or configured.simulate
-    service = LightsService(FakeLights() if simulate else Unconnected())
+    service = LightsService(FakeMesh() if simulate else Unconnected())
 
     # The MCP server is a slow import, and only a working command needs it.
     from mcp.types import CallToolResult  # noqa: PLC0415

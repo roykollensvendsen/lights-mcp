@@ -7,7 +7,7 @@ from lights_mcp import cli
 
 def test_status_says_what_the_voice_would_hear(capsys):
     assert cli.main(["status", "--simulate"]) == 0
-    assert capsys.readouterr().out == "Simulated: The lights is on, at level 40.\n"
+    assert capsys.readouterr().out == "Simulated: Desk lamp is on, at 40 percent. Porch light is off.\n"
 
 
 def test_with_no_real_lights_set_up_status_says_so(tmp_path, monkeypatch, capsys):
@@ -15,7 +15,7 @@ def test_with_no_real_lights_set_up_status_says_so(tmp_path, monkeypatch, capsys
     config.write_text("[device]\nsimulate = false\n")
     monkeypatch.setenv("LIGHTS_MCP_CONFIG", str(config))
     assert cli.main(["status"]) == 0
-    assert capsys.readouterr().out == "No real lights is set up yet, so nothing was asked.\n"
+    assert capsys.readouterr().out == "No real lights are set up yet, so nothing was asked.\n"
 
 
 def test_a_broken_config_stops_the_command_with_the_fix(tmp_path, monkeypatch, capsys):

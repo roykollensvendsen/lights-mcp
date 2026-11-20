@@ -1,0 +1,5 @@
+[[rule]]
+name = "the fake refuses a level the device cannot take"
+file = "src/lights_mcp/fake.py"
+find = 'if not LOWEST <= level <= HIGHEST:'
+replace = 'if False:'

@@ -1,7 +1,7 @@
-"""What the plugin needs from a lights, and the ways asking one can fail.
+"""What the plugin needs from a lighting mesh, and the ways asking one can fail.
 
 The service talks to this and nothing else. The fake (`fake.py`) and the real adapter both
-answer it, so every test runs through the same door the real device does.
+answer it, so every test runs through the same door the real mesh does.
 """
 
 from __future__ import annotations
@@ -11,46 +11,57 @@ from typing import Protocol
 
 
 class DeviceError(Exception):
-    """Asking the lights failed; each kind below is said to the voice in its own words."""
+    """Asking the mesh failed; each kind below is said to the voice in its own words."""
 
 
 class UnreachableError(DeviceError):
-    """The lights did not answer in time."""
-
-
-class SlowDownError(DeviceError):
-    """The lights refuses to be asked again so soon."""
-
-    def __init__(self, seconds: float) -> None:
-        """Keep how long to wait, so the voice can say it."""
-        super().__init__(f"ask again in {seconds:.0f} s")
-        self.seconds = seconds
+    """The link to the mesh is down, so no light can be read or changed."""
 
 
 class NotSetUpError(DeviceError):
-    """No real lights is set up, so nothing was asked."""
+    """No real mesh is set up, so nothing was asked."""
 
 
 @dataclass(frozen=True)
-class Reading:
-    """What the lights says about itself: whether it is on, and its level from 0 to 100."""
+class Light:
+    """One light as the mesh reports it: its name, whether it is on, and its level from 0 to 100."""
 
+    name: str
     on: bool
     level: int
+    dimmable: bool
 
 
-class Lights(Protocol):
-    """A lights the plugin can read."""
+class Mesh(Protocol):
+    """A lighting mesh the plugin can read and change."""
 
-    async def read(self) -> Reading:
-        """The lights's state now."""
+    async def lights(self) -> list[Light]:
+        """Every light and its state now."""
+        ...
+
+    async def switch(self, name: str, *, on: bool) -> None:
+        """Ask the light called `name` to switch on or off."""
+        ...
+
+    async def dim(self, name: str, level: int) -> None:
+        """Ask the light called `name` for a level from 1 to 100, which also switches it on."""
         ...
 
 
-class Unconnected:
-    """The real lights, until an adapter for it is written: every read says so."""
+NO_ADAPTER = "no adapter for a real mesh is written yet; run with --simulate"
 
-    async def read(self) -> Reading:
+
+class Unconnected:
+    """The real mesh, until its adapter is written: every request says so."""
+
+    async def lights(self) -> list[Light]:
         """Refuse, naming the next step."""
-        msg = "no adapter for a real lights is written yet; run with --simulate"
-        raise NotSetUpError(msg)
+        raise NotSetUpError(NO_ADAPTER)
+
+    async def switch(self, name: str, *, on: bool) -> None:  # noqa: ARG002 - nothing is asked
+        """Refuse, naming the next step."""
+        raise NotSetUpError(NO_ADAPTER)
+
+    async def dim(self, name: str, level: int) -> None:  # noqa: ARG002 - nothing is asked
+        """Refuse, naming the next step."""
+        raise NotSetUpError(NO_ADAPTER)

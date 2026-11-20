@@ -1,0 +1,5 @@
+[[rule]]
+name = "dim to zero switches the light off"
+file = "src/lights_mcp/service.py"
+find = 'if level == 0:'
+replace = 'if False:'

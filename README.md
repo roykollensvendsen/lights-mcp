@@ -1,7 +1,7 @@
 # lights-mcp
 
-A made-up lights, read by voice. This is an MCP server that a voice assistant reaches through
-claude-voice, as one of its plugins.
+Lights on a Bluetooth mesh, read, switched and dimmed by voice. This is an MCP server that a
+voice assistant reaches through claude-voice, as one of its plugins.
 
 It started from claude-voice's plugin template. The guide for writing one is
 `docs/write-a-plugin.md` in claude-voice, and `docs/plugin-standard.md` there holds the rules.
@@ -32,8 +32,8 @@ ends with the usual typed-name approval.
 |---|---|
 | `src/lights_mcp/server.py` | The MCP tools. Each answer carries a `say`, the sentence the voice reads aloud. |
 | `src/lights_mcp/service.py` | The core: it asks the lights and words every answer, failures included. |
-| `src/lights_mcp/device.py` | What the service needs from a lights. A real adapter answers it. |
-| `src/lights_mcp/fake.py` | A made-up lights that refuses what the real one refuses. |
+| `src/lights_mcp/device.py` | What the service needs from a lighting mesh. A real adapter answers it. |
+| `src/lights_mcp/fake.py` | A made-up mesh of two lights that refuses what the real one refuses. |
 | `src/lights_mcp/settings.py` | The plugin's own config, from its own folder. |
 | `src/lights_mcp/platform/` | The one place that knows the operating system. |
 | `scripts/ratchet.py` | The quality levels, which may never get worse than main's. |

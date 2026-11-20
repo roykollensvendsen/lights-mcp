@@ -1,0 +1,5 @@
+[[rule]]
+name = "a change the mesh does not confirm is said"
+file = "src/lights_mcp/service.py"
+find = 'return after\.on != on or \(level is not None and after\.level != level\)'
+replace = 'return False'
